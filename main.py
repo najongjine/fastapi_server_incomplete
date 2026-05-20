@@ -18,7 +18,7 @@ from dbconnect import create_table, getConnect
 
 UPLOAD_DIR = Path("public/uploads")
 
-
+# 서버 시작하면 실행하는 코드
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -27,8 +27,9 @@ async def lifespan(app: FastAPI):
     yield
     task.cancel()
 
-
+# 서버 만드는 코드
 app = FastAPI(lifespan=lifespan)
+# 보안 해제 코드
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -131,5 +132,6 @@ def add_item(
     finally:
         conn.close()
 
+# 서버 실행하는게 어려운데, 서버 실행 명령어를 간단하게 만들어준다
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
