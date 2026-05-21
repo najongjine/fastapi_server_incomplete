@@ -11,18 +11,18 @@ DB 에 접속하고난 객체를 퉤 뱉는놈
 """
 def getConnect():
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
+        host="localhost",
+        port=5433,
+        dbname="postgres",
+        user="postgres",
+        password="aaaa",
     )
 
 
 def create_table():
     """Create sample memo tables if they do not exist."""
     title_sql = """
-    CREATE TABLE IF NOT EXISTS t_tile(
+    CREATE TABLE IF NOT EXISTS t_title(
     id SERIAL PRIMARY KEY,
     title VARCHAR,
     subtitle VARCHAR,

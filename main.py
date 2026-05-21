@@ -62,37 +62,79 @@ def my_type_js():
 @app.get("/api/title")
 def get_title():
     sql = """
+    SELECT
+    d.id,
+    d.title
+    FROM t_title as d
+    ORDER BY d.id desc
+    
     """
     conn = getConnect()
     try:
-        pass
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchone()
+
+            if row is None:
+                return {"result": "success", "data": None}
+
+            return {"result": "success", "data": dict(row)}
     finally:
         conn.close()
-
+"""
+인터넷 주소창으로 치고 들어갈수 있음.
+보안에 취약.
+"""
 @app.get("/api/items")
 def get_items():
     sql = """
-
+    SELECT
+    c.id,
+    c.content,
+    c.img_url,
+    c.price
+    FROM t_item as c
+    ORDER BY c.id desc
+    
     """
     conn = getConnect()
     try:
-        pass
+         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(sql)
+            rows = cursor.fetchall()
+
+            return {"result": "success", "data": [dict(row) for row in rows]}
     finally:
         conn.close()
 
-
+"""
+인터넷 주소창 치고 들어갈수 없음.
+데이터는 body에 실려서 전달됨.
+파일 업로드도 수행할수 있음
+"""
 @app.post("/api/add_title")
 def add_title(
     title: str = Form(...),
     subtitle: str = Form(...),
 ):
+    """
+    %s 이건 SQL injection 방어 기법
+    SQL injection: 사용자 입력창에 의도적으로 공격이나 데이터 탈취 가능한
+    SQL 명령문을 입력하여 시스템이 오작동하거나, 데이터베이스 명령을 실행해서
+    공격 받거나 데이터 탈취되는 공격
+    """
     sql = """
+    INSERT INTO t_title(title,subtitle)
+    VALUES (%s, %s)
+    RETURNING id, title, subtitle, created_at
     """
     conn = getConnect()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            pass
-            return {"result": "success", "data": dict(None)}
+            cursor.execute(sql, (title, subtitle))
+            row = cursor.fetchone()
+            conn.commit()
+            return {"result": "success", "data": dict(row)}
     except Exception:
         conn.rollback()
         raise
@@ -104,7 +146,7 @@ def add_title(
 def add_item(
     content: str = Form(...),
     img_url: Optional[str] = Form(None),
-    cnt: Optional[int] = Form(None),
+    price: Optional[int] = Form(None),
     image: Optional[UploadFile] = File(None),
 ):
     save_img_url = img_url
@@ -118,11 +160,14 @@ def add_item(
         save_img_url = f"/public/uploads/{filename}"
 
     sql = """
+    INSERT INTO t_item(content,img_url,price)
+    VALUES(%s,%s,%s)
+    RETURNING id, content, img_url, price, created_at
     """
     conn = getConnect()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(sql, (content, save_img_url, cnt))
+            cursor.execute(sql, (content, save_img_url, price))
             row = cursor.fetchone()
             conn.commit()
             return {"result": "success", "data": dict(row)}
