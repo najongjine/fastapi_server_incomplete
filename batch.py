@@ -7,7 +7,17 @@ from dbconnect import getConnect
 async def batch_job():
     while True:
         try:
-            pass
+            conn = getConnect()
+            try:
+                with conn.cursor() as cursor:
+                    # 과제. t_item table count 하는 쿼리 넣기
+                    cursor.execute("")
+                    total = cursor.fetchone()[0]
+            finally:
+                conn.close()
+
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[batch] DB connection OK {total}")
         except Exception as error:
             print(f"[batch error] {error}")
 

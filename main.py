@@ -61,6 +61,7 @@ def my_type_js():
 
 @app.get("/api/title")
 def get_title():
+    # 과제. subtitle 칼럼 추가하기
     sql = """
     SELECT
     d.id,
